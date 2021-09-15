@@ -1,0 +1,91 @@
+## Test Model Tamplate
+
+#set($className = $class0.name)
+#set($varClassName = $className.substring(0, 1).toLowerCase() + $className.substring(1))
+
+#macro(getValue $member)
+    #if ($member.string)##
+        "test"##
+    #elseif($member.boolean || $member.type == "java.lang.Boolean")##
+        true##
+    #elseif($member.long || $member.type == "java.lang.Long")##
+        1L##
+    #elseif($member.float || $member.type == "java.lang.Float")##
+        1.0f##
+    #elseif($member.double || $member.type == "java.lang.Double")##
+        1.0##
+    #elseif($member.char || $member.type == "java.lang.Character")##
+        'T'##
+    #elseif($member.byte || $member.type == "java.lang.Byte")##
+        (byte) 1##
+    #elseif($member.short || $member.type == "java.lang.Short")##
+        (short) 1##
+    #elseif($member.numeric)##
+        1##
+    #elseif($member.primitiveArray)##
+        new ${member.type}{}##
+    #elseif($member.enum)##
+        ${member.type}.values()[0]##
+    #elseif($member.list)##
+        List.of()##
+    #elseif($member.set)##
+        Set.of()##
+    #elseif($member.map)##
+        Map.of()##
+    #else##
+        new ${member.type}()##
+    #end
+#end
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import java.util.Optional;
+
+class ${className}Test {
+    
+    private ${className} ${varClassName};
+
+    @BeforeEach
+    void setUp() {
+        ${varClassName} = create${className}();
+    }
+
+    #foreach($member in $members)
+        #set($memberName = $member.name)
+        #set($memberNameBeanConvention = $StringUtil.capitalizeWithJavaBeanConvention($memberName))
+        #set($prefix = "#if($member.primitive)is#{else}get#end")
+        @Test
+        void set${memberNameBeanConvention}() {
+            #if ($member.boolean || $member.type == "java.lang.Boolean")
+                ${varClassName}.set${memberNameBeanConvention}(true);
+                Assertions.assertEquals(Optional.of(true), Optional.ofNullable(${varClassName}.${prefix}${memberNameBeanConvention}()));
+            #else
+                ${member.type} ${memberName}Test = #getValue($member);
+                ${varClassName}.set${memberNameBeanConvention}(${memberName}Test);
+                Assertions.assertEquals(Optional.of(${memberName}Test), Optional.ofNullable(${varClassName}.get${memberNameBeanConvention}()));
+            #end
+        }
+    #end
+
+    #foreach($member in $members)
+        #set($memberName = $member.name)
+        #set($memberNameBeanConvention = $StringUtil.capitalizeWithJavaBeanConvention($memberName))
+        #set($prefix = "#if($member.boolean && $member.primitive)is#{else}get#end")
+        @Test
+        void ${prefix}${memberNameBeanConvention}() {
+            Assertions.assertNotNull(${varClassName}.${prefix}${memberNameBeanConvention}());
+        }
+    #end
+
+    private ${className} create${className}() {
+        ${className} ${varClassName} = new ${className}();
+        #foreach($member in $members)
+            #set($memberName = $member.name)
+            #set($memberNameBeanConvention = $StringUtil.capitalizeWithJavaBeanConvention($memberName))
+            ${varClassName}.set${memberNameBeanConvention}(#getValue($member));
+        #end
+        return ${varClassName};
+    }
+
+}
