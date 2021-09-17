@@ -55,15 +55,16 @@ class ${className}Test {
         #set($memberName = $member.name)
         #set($memberNameBeanConvention = $StringUtil.capitalizeWithJavaBeanConvention($memberName))
         #set($prefix = "#if($member.primitive)is#{else}get#end")
+        #set($nullable = "#if($member.primitive)of#{else}ofNullable#end")
         @Test
         void set${memberNameBeanConvention}() {
             #if ($member.boolean || $member.type == "java.lang.Boolean")
                 ${varClassName}.set${memberNameBeanConvention}(true);
-                Assertions.assertEquals(Optional.of(true), Optional.ofNullable(${varClassName}.${prefix}${memberNameBeanConvention}()));
+                Assertions.assertEquals(Optional.of(true), Optional.${nullable}(${varClassName}.${prefix}${memberNameBeanConvention}()));
             #else
                 ${member.type} ${memberName}Test = #getValue($member);
                 ${varClassName}.set${memberNameBeanConvention}(${memberName}Test);
-                Assertions.assertEquals(Optional.of(${memberName}Test), Optional.ofNullable(${varClassName}.get${memberNameBeanConvention}()));
+                Assertions.assertEquals(Optional.of(${memberName}Test), Optional.${nullable}(${varClassName}.get${memberNameBeanConvention}()));
             #end
         }
     #end
@@ -72,9 +73,14 @@ class ${className}Test {
         #set($memberName = $member.name)
         #set($memberNameBeanConvention = $StringUtil.capitalizeWithJavaBeanConvention($memberName))
         #set($prefix = "#if($member.boolean && $member.primitive)is#{else}get#end")
+        #set($nullable = "#if($member.primitive)of#{else}ofNullable#end")
         @Test
         void ${prefix}${memberNameBeanConvention}() {
-            Assertions.assertNotNull(${varClassName}.${prefix}${memberNameBeanConvention}());
+            #if ($member.primitive)
+                Assertions.assertEquals(Optional.of(#getValue($member)), Optional.${nullable}(${varClassName}.${prefix}${memberNameBeanConvention}()));
+            #else
+                Assertions.assertNotNull(${varClassName}.${prefix}${memberNameBeanConvention}());
+            #end
         }
     #end
 
