@@ -32,6 +32,8 @@
         Set.of()##
     #elseif($member.map)##
         Map.of()##
+    #elseif($member.type == "java.time.LocalDate" || $member.type == "java.time.LocalDateTime" || $member.type == "java.time.LocalTime")##
+        ${member.type}.now()##
     #else##
         new ${member.type}()##
     #end
