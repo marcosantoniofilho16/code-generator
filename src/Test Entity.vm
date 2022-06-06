@@ -27,12 +27,12 @@
     #elseif($member.enum)##
         ${member.type}.values()[0]##
     #elseif($member.list)##
-        List.of()##
+        new ArrayList<>()##
     #elseif($member.set)##
         Set.of()##
     #elseif($member.map)##
         Map.of()##
-    #elseif($member.type == "java.time.LocalDate" || $member.type == "java.time.LocalDateTime" || $member.type == "java.time.LocalTime")##
+    #elseif($member.type == "java.time.LocalDate" || $member.type == "java.time.LocalDateTime" || $member.type == "java.time.LocalTime" || $member.type == "java.time.Instant")##
         ${member.type}.now()##
     #else##
         new ${member.type}()##
@@ -43,6 +43,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.util.Optional;
+#foreach($member in $members)
+    #if($member.list)
+        import java.util.ArrayList;
+        #break
+    #end
+#end
 
 class ${className}Test {
     
